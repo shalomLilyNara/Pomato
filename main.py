@@ -18,8 +18,8 @@ class TimerApp(QMainWindow):
         self.setWindowTitle("Pomato")
         self.resize(500, 300)
         # Timer settings
-        self.pomo_time = QTime(0, 0, 3)  # 25 minutes for default pomo time
-        self.s_break = QTime(0, 0, 3)  # 5 minutes for default short break
+        self.pomo_time = QTime(0, 25, 0)  # 25 minutes for default pomo time
+        self.s_break = QTime(0, 5, 0)  # 5 minutes for default short break
         self.l_break = QTime(0, 15, 0)  # 15 minutes for default long break
         self.timer = QTimer(self)
         self.time_left = QTime(self.pomo_time)
