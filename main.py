@@ -18,8 +18,8 @@ class TimerApp(QMainWindow):
         self.setWindowTitle("Pomato")
         self.resize(500, 300)
         # Timer settings
-        self.pomo_time = QTime(0, 0, 3)  # 25 minutes for default pomo time
-        self.s_break = QTime(0, 0, 3)  # 5 minutes for default short break
+        self.pomo_time = QTime(0, 25, 0)  # 25 minutes for default pomo time
+        self.s_break = QTime(0, 5, 0)  # 5 minutes for default short break
         self.l_break = QTime(0, 15, 0)  # 15 minutes for default long break
         self.timer = QTimer(self)
         self.time_left = QTime(self.pomo_time)
@@ -36,7 +36,6 @@ class TimerApp(QMainWindow):
         self._setup_ui()
         self.load_tasks()
 
-
     def _setup_ui(self):
         """Set up the UI components and layouts"""
         # Task management elements
@@ -44,18 +43,17 @@ class TimerApp(QMainWindow):
         self.task_input.setPlaceholderText("Input task name")
         self.add_task_button = QPushButton("Add task", self)
         self.config_button = QPushButton("Configure tasks", self)
-        
         # Timer elements
         self.timer_label = QLabel(self.time_left.toString("mm:ss"), self)
         self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.timer_label.setStyleSheet("font-size: 48px;")
+        self.timer_label.setStyleSheet("font-size: 48px; color: white;")
         self.start_button = QPushButton("Start", self)
         self.stop_button = QPushButton("Stop", self)
         self.set_timer_button = QPushButton("Set timer", self)
         # Session indicator
         self.session_label = QLabel(f"Session: {self.session_count % 4 + 1} (Pomodoro)", self)
         self.session_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.session_label.setStyleSheet("font-size: 14px")
+        self.session_label.setStyleSheet("font-size: 14px; color: white")
         # Table
         self.task_table = QTableWidget(self)
         self.task_table.setColumnCount(2)
@@ -65,10 +63,11 @@ class TimerApp(QMainWindow):
                 background-color: transparent;
                 color: white;
             }
-        """) 
+        """)
         self.task_table.itemDoubleClicked.connect(self.configure_task) # activate configure window when double clicking a task
         self.task_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers) # disable direct editing of a task
-        
+
+
         # Layout
         input_layout = QHBoxLayout()
         input_layout.addWidget(self.task_input)
@@ -86,6 +85,16 @@ class TimerApp(QMainWindow):
         layout.addWidget(self.timer_label)
         layout.addWidget(self.session_label)
         layout.addLayout(button_layout)
+
+        # Color theme
+        # self.add_task_button.setStyleSheet("background-color: #252526")
+        # self.start_button.setStyleSheet("background-color: #252526")
+        # self.task_table.setStyleSheet("background-color: #252526")
+        self.add_task_button.setStyleSheet("color: white")
+        self.config_button.setStyleSheet("color: white")
+        self.start_button.setStyleSheet("color: white")
+        self.stop_button.setStyleSheet("color: white")
+        self.set_timer_button.setStyleSheet("color: white")
 
         # Connect signals
         self.add_task_button.clicked.connect(self.add_task)
@@ -412,11 +421,14 @@ class TimerApp(QMainWindow):
         self.save_tasks()
         event.accept()  # Proceed with closing the window
 
+
 def main():
     app = QApplication(sys.argv)
     window = TimerApp()
+    window.setStyleSheet("background-color: #252526")
     window.show()
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()
