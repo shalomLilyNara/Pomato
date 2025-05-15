@@ -4,19 +4,15 @@ import json
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QLabel, QVBoxLayout,
                              QHBoxLayout, QWidget, QPushButton, QLineEdit,
                              QTableWidget, QTableWidgetItem, QDialog,
-                             QColorDialog, QDialogButtonBox, QMessageBox)
+                             QColorDialog, QDialogButtonBox, QMessageBox, QStackedWidget)
 from PyQt6.QtCore import QTimer, QTime, Qt
 from PyQt6.QtGui import QColor
 # import winsound
 
 
-class TimerApp(QMainWindow):
-    def __init__(self):
-        super().__init__()
-
-        # App configuration
-        self.setWindowTitle("Pomato")
-        self.resize(500, 300)
+class TimerScene(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
         # Timer settings
         self.pomo_time = QTime(0, 25, 0)  # 25 minutes for default pomo time
         self.s_break = QTime(0, 5, 0)  # 5 minutes for default short break
@@ -67,7 +63,6 @@ class TimerApp(QMainWindow):
         self.task_table.itemDoubleClicked.connect(self.configure_task) # activate configure window when double clicking a task
         self.task_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers) # disable direct editing of a task
 
-
         # Layout
         input_layout = QHBoxLayout()
         input_layout.addWidget(self.task_input)
@@ -87,9 +82,6 @@ class TimerApp(QMainWindow):
         layout.addLayout(button_layout)
 
         # Color theme
-        # self.add_task_button.setStyleSheet("background-color: #252526")
-        # self.start_button.setStyleSheet("background-color: #252526")
-        # self.task_table.setStyleSheet("background-color: #252526")
         self.add_task_button.setStyleSheet("color: white")
         self.config_button.setStyleSheet("color: white")
         self.start_button.setStyleSheet("color: white")
@@ -103,11 +95,6 @@ class TimerApp(QMainWindow):
         self.stop_button.clicked.connect(self.stop_timer)
         self.config_button.clicked.connect(self.configure_task)
         self.set_timer_button.clicked.connect(self.set_pomo_time)
-
-        # Set central widget
-        container = QWidget()
-        container.setLayout(layout)
-        self.setCentralWidget(container)
 
     def set_pomo_time(self):
         dialog = QDialog(self)
@@ -421,10 +408,76 @@ class TimerApp(QMainWindow):
         self.save_tasks()
         event.accept()  # Proceed with closing the window
 
+class StatsScene(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        layout1 = QVBoxLayout()
+        label1 = QLabel("Stats Scene")
+        layout1.addWidget(label1)
+        self.setLayout(layout1)
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.stacked_widget = QStackedWidget()
+        self.screen1 = TimerScene()
+        self.screen2 = StatsScene()
+        self.stacked_widget.addWidget(self.screen1)
+        self.stacked_widget.addWidget(self.screen2)
+
+        self.button1 = QPushButton("Timer")
+        self.button1.setObjectName("button1")
+        self.button1.setFixedSize(80, 40)
+        self.button2 = QPushButton("Stats")
+        self.button2.setObjectName("button2")
+        self.button2.setFixedSize(80, 40)
+        self.button1.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(0))
+        self.button2.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(1))
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.button1)
+        button_layout.addWidget(self.button2)
+
+        # Qss style sheet
+        self.setStyleSheet("""
+            QPushButton#button1{
+            background-color: #c71a16;
+            border-style: solid;
+            border-width: 0px;
+            border-radius: 5px;
+            }
+            QPushButton:hover#button1{
+            background-color: #8f0a07;
+            }
+            QPushButton:pressed#button1{
+            background-color: #c71a16;
+            }
+
+            QPushButton#button2{
+            background-color: #36701b;
+            border-style: solid;
+            border-width: 0px;
+            border-radius: 5px;
+            }
+            QPushButton:hover#button2{
+            background-color: #21520b;
+            }
+            QPushButton:pressed#button2{
+            background-color: #36701b;
+            }
+        """)
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(button_layout)
+        main_layout.addWidget(self.stacked_widget)
+
+        self.setLayout(main_layout)
+        self.setWindowTitle("Pomato")
+        self.resize(500, 500)
+
 
 def main():
     app = QApplication(sys.argv)
-    window = TimerApp()
+    window = MainWindow()
     window.setStyleSheet("background-color: #252526")
     window.show()
     sys.exit(app.exec())
