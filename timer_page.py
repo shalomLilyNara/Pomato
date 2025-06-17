@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QBoxLayout, QLabel, QMainWindow, QPushButton, QStackedWidget, QWidget, QVBoxLayout, QHBoxLayout
 from PySide6.QtMultimedia import QSoundEffect
-from PySide6.QtCore import Qt, QTime, QTimer, QUrl
+from PySide6.QtCore import Qt, QTime, QTimer, QUrl, Slot
 
 
 class TimerPage(QWidget):
@@ -9,7 +9,7 @@ class TimerPage(QWidget):
         self.setStyleSheet("background-color: #191919;")
 
         # Timer settings
-        self.pomo_time = QTime(0, 0, 3)  # 25 minutes for default pomo time
+        self.pomo_time = QTime(0, 0, 2)  # 25 minutes for default pomo time
         self.s_break = QTime(0, 5, 0)  # 5 minutes for default short break
         self.l_break = QTime(0, 15, 0)  # 15 minutes for default long break
         self.timer = QTimer(self)
@@ -67,6 +67,29 @@ class TimerPage(QWidget):
         self.setLayout(layout)
 
 
+    # Slots to receive signals from config_page
+    @Slot(int)
+    def update_pomo_time(self, minutes):
+        self.pomo_time = QTime(0, minutes, 0)
+        if self.timer_mode == "pomodoro" and self.state == "stopped":
+            self.time_left = QTime(self.pomo_time)
+            self.timer_label.setText(self.time_left.toString("mm:ss"))
+
+    @Slot(int)
+    def update_s_break_time(self, minutes):
+        self.s_break= QTime(0, minutes, 0)
+        if self.timer_mode == "short_break" and self.state == "stopped":
+            self.time_left = QTime(self.s_break)
+            self.timer_label.setText(self.time_left.toString("mm:ss"))
+
+    @Slot(int)
+    def update_l_break_time(self, minutes):
+        self.lbreak = QTime(0, minutes, 0)
+        if self.timer_mode == "long_break" and self.state == "stopped":
+            self.time_left = QTime(self.l_break)
+            self.timer_label.setText(self.time_left.toString("mm:ss"))
+
+
     def update_timer(self):
         """Update the timer display and track task time"""
         # Update task time if a task is selected
@@ -77,13 +100,10 @@ class TimerPage(QWidget):
             if self.time_left == QTime(0, 0, 0):
                 self.state = "overtime"
                 self.set_timer_color()
-                # winsound.MessageBeep()
-                message_text = ""
                 if self.timer_mode == "pomodoro":
-                    message_text = "Pomodoro completed! Let's take a break"
                     self.pomo_done_sound.play()
                 else:
-                    message_text = "Break time is up! Ready for another pomo session?"
+                    self.pomo_done_sound.play()
                 self.overtime_time = QTime(0, 0, 0)
         else:
             # If it's overtime, add "+" simbol to the display time
@@ -121,6 +141,7 @@ class TimerPage(QWidget):
     def stop_timer(self):
         """Stop the timer and reset to default state"""
         self.timer.stop()
+        # Add 1 to session count if it is overtime (if the user has finished the pomo)
         if self.state == "overtime" and self.timer_mode == "pomodoro":
             self.session_count += 1
 
@@ -138,6 +159,12 @@ class TimerPage(QWidget):
             self.session_label.setText(f"Session: {self.session_count % 4 + 1} (Pomodoro)")
 
         self.state = "stopped"
+
+        if self.timer_mode == "short_break" or self.timer_mode == "long_break":
+            self.stop_button.setText("Finish break")
+        else:
+            self.stop_button.setText("Stop")
+
         self.current_task = None
         self.start_button.setText("Start")
         self.timer_label.setText(self.time_left.toString("mm:ss"))  # Update display from time_left

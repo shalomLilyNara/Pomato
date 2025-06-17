@@ -11,9 +11,15 @@ class MainWindow(QMainWindow):
         self.app = app
         self.setWindowTitle("Pomato")
 
+        # Create the pages
         self.timer_page = TimerPage()
         self.stats_page = StatsPage()
         self.config_page = ConfigPage()
+
+        # Connect the signals from config_page to slots in timer_page
+        self.config_page.pomo_time_changed.connect(self.timer_page.update_pomo_time)
+        self.config_page.s_break_changed.connect(self.timer_page.update_s_break_time)
+        self.config_page.l_break_changed.connect(self.timer_page.update_l_break_time)
 
         self.stacked_widget = QStackedWidget()
         self.stacked_widget.addWidget(self.timer_page)
