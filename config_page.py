@@ -1,6 +1,7 @@
-from PySide6.QtWidgets import QBoxLayout, QLabel, QMainWindow, QPushButton, QStackedWidget, QWidget, QVBoxLayout, QHBoxLayout, QSlider
-from PySide6.QtCore import Qt, QTime, Signal
-
+from PySide6.QtWidgets import QLabel, QWidget, QVBoxLayout, QSlider
+from PySide6.QtCore import Qt,Signal
+import json
+from pathlib import Path
 
 class ConfigPage(QWidget):
     # Emit signals when timer values change
@@ -10,45 +11,57 @@ class ConfigPage(QWidget):
 
     def __init__(self):
         super().__init__()
+        """Load timer settings from JSON file"""
+        try:
+            with open("data/timer_settings.json") as f:
+                timer_settings_json = f.read()
+                self.timer_settings = json.loads(timer_settings_json)
+        except (FileNotFoundError, json.JSONDecodeError):
+            # Create a json file with default settings
+            timer_settings_json = Path("data/timer_settings.json")
+            timer_settings_json.touch()
+            self.timer_settings = [25, 5, 15] # Default timer settings (pomo, short break, long break)
+            with open("data/timer_settings.json", "w") as f:
+                json.dump(self.timer_settings, f)
 
         # Slider settings
         self.pomo_slider = QSlider(Qt.Horizontal)
         self.pomo_slider.setMaximum(60)
         self.pomo_slider.setMinimum(15)
         self.pomo_slider.setSingleStep(5)
-        self.pomo_slider.setValue(25) # Set default pomo timer to 25 minutes
+        self.pomo_slider.setValue(self.timer_settings[0])
 
         self.s_break_slider = QSlider(Qt.Horizontal)
         self.s_break_slider.setMaximum(20)
         self.s_break_slider.setMinimum(3)
-        self.s_break_slider.setValue(5) # Set default short break to 5 minutes
+        self.s_break_slider.setValue(self.timer_settings[1])
 
         self.l_break_slider = QSlider(Qt.Horizontal)
         self.l_break_slider.setMaximum(30)
         self.l_break_slider.setMinimum(15)
         self.l_break_slider.setSingleStep(5)
-        self.l_break_slider.setValue(15) # Set default long break to 20 minutes
+        self.l_break_slider.setValue(self.timer_settings[2])
 
         self.pomo_label = QLabel()
         self.pomo_discription = QLabel("Pomo timer")
         self.pomo_label.setAlignment(Qt.AlignCenter)
         self.pomo_discription.setAlignment(Qt.AlignCenter)
         self.pomo_slider.valueChanged.connect(self.update_pomo)
-        self.update_pomo(25)
+        self.update_pomo(self.timer_settings[0])
 
         self.s_break_label = QLabel()
         self.s_break_discription = QLabel("Short break timer")
         self.s_break_label.setAlignment(Qt.AlignCenter)
         self.s_break_discription.setAlignment(Qt.AlignCenter)
         self.s_break_slider.valueChanged.connect(self.update_s_break)
-        self.update_s_break(5)
+        self.update_s_break(self.timer_settings[1])
 
         self.l_break_label = QLabel()
         self.l_break_discription = QLabel("Long break timer")
         self.l_break_label.setAlignment(Qt.AlignCenter)
         self.l_break_discription.setAlignment(Qt.AlignCenter)
         self.l_break_slider.valueChanged.connect(self.update_l_break)
-        self.update_l_break(15)
+        self.update_l_break(self.timer_settings[2])
 
         # Layout settings
         layout = QVBoxLayout()
@@ -95,10 +108,14 @@ class ConfigPage(QWidget):
             self.pomo_slider.setValue(adjusted_value)
         self.pomo_label.setText(str(adjusted_value))
         self.pomo_time_changed.emit(adjusted_value)
+        self.timer_settings[0] = adjusted_value
+        self.save_changes()
 
     def update_s_break(self, value):
         self.s_break_label.setText(str(value))
         self.s_break_changed.emit(value)
+        self.timer_settings[1] = value
+        self.save_changes()
 
     def update_l_break(self, value):
         step = 5
@@ -107,4 +124,10 @@ class ConfigPage(QWidget):
             self.l_break_slider.setValue(adjusted_value)
         self.l_break_label.setText(str(adjusted_value))
         self.l_break_changed.emit(adjusted_value)
+        self.timer_settings[2] = adjusted_value
+        self.save_changes()
 
+    def save_changes(self):
+        """Save timer settings to JSON file"""
+        with open("data/timer_settings.json", "w") as f:
+            json.dump(self.timer_settings, f)

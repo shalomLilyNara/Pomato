@@ -1,9 +1,8 @@
-from PySide6.QtWidgets import QBoxLayout, QLabel, QMainWindow, QPushButton, QStackedWidget, QWidget, QVBoxLayout, QHBoxLayout, QComboBox
+from PySide6.QtWidgets import QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QComboBox
 from PySide6.QtMultimedia import QSoundEffect
 from PySide6.QtCore import Qt, QTime, QTimer, QUrl, Slot
-import json
-import pathlib
 from stats_page import StatsPage
+from config_page import ConfigPage
 
 class TimerPage(QWidget):
     def __init__(self):
@@ -13,10 +12,14 @@ class TimerPage(QWidget):
         # Import stats from stats page
         self.stats_instance = StatsPage()
 
+        # Import timer settings from config page
+        self.config = ConfigPage()
+        self.timer_settings = self.config.timer_settings
+
         # Timer settings
-        self.pomo_time = QTime(0, 0, 2)  # 25 minutes for default pomo time
-        self.s_break = QTime(0, 5, 0)  # 5 minutes for default short break
-        self.l_break = QTime(0, 15, 0)  # 15 minutes for default long break
+        self.pomo_time = QTime(0, self.timer_settings[0], 0)
+        self.s_break = QTime(0, self.timer_settings[1], 0)
+        self.l_break = QTime(0, self.timer_settings[2], 0)
         self.timer = QTimer(self)
         self.time_left = QTime(self.pomo_time)
         self.timer.timeout.connect(self.update_timer)
@@ -24,6 +27,7 @@ class TimerPage(QWidget):
         # Sound settings
         self.pomo_done_sound = QSoundEffect()
         self.pomo_done_sound.setSource(QUrl.fromLocalFile("./resources/mixkit-correct-answer-tone-2870.wav"))
+        self.pomo_done_sound.setVolume(0.1)
 
         # Session tracking
         self.session_count = 0
