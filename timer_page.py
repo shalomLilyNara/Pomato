@@ -1,12 +1,17 @@
-from PySide6.QtWidgets import QBoxLayout, QLabel, QMainWindow, QPushButton, QStackedWidget, QWidget, QVBoxLayout, QHBoxLayout
+from PySide6.QtWidgets import QBoxLayout, QLabel, QMainWindow, QPushButton, QStackedWidget, QWidget, QVBoxLayout, QHBoxLayout, QComboBox
 from PySide6.QtMultimedia import QSoundEffect
 from PySide6.QtCore import Qt, QTime, QTimer, QUrl, Slot
-
+import json
+import pathlib
+from stats_page import StatsPage
 
 class TimerPage(QWidget):
     def __init__(self):
         super().__init__()
         self.setStyleSheet("background-color: #191919;")
+
+        # Import stats from stats page
+        self.stats_instance = StatsPage()
 
         # Timer settings
         self.pomo_time = QTime(0, 0, 2)  # 25 minutes for default pomo time
@@ -34,6 +39,11 @@ class TimerPage(QWidget):
 
     def _setup_ui(self):
         """Set up the UI components and layouts"""
+        # ComboBox: Add every item's name from the dictionary 
+        self.task_combobox = QComboBox(self)
+        for task in self.stats_instance.stats:
+            self.task_combobox.addItem(task["name"])
+        self.task_combobox.setStyleSheet("QComboBox::item:selected { background-color: rgb(255, 0, 0); }")
         # Timer elements
         self.timer_label = QLabel(self.time_left.toString("mm:ss"), self)
         self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -51,6 +61,7 @@ class TimerPage(QWidget):
         button_layout.addWidget(self.stop_button)
 
         layout = QVBoxLayout()
+        layout.addWidget(self.task_combobox)
         layout.addWidget(self.timer_label)
         layout.addWidget(self.session_label)
         layout.addLayout(button_layout)
@@ -65,12 +76,22 @@ class TimerPage(QWidget):
 
         # Set layout
         self.setLayout(layout)
+        self.setStyleSheet("""
+        QComboBox{
+        color: white;
+        }
+
+        QComboBox::item:selected {
+        background-color: #FF4433;
+        }
+        """)
 
 
     # Slots to receive signals from config_page
     @Slot(int)
     def update_pomo_time(self, minutes):
         self.pomo_time = QTime(0, minutes, 0)
+        # Update the timer if it isn't running
         if self.timer_mode == "pomodoro" and self.state == "stopped":
             self.time_left = QTime(self.pomo_time)
             self.timer_label.setText(self.time_left.toString("mm:ss"))
@@ -92,10 +113,13 @@ class TimerPage(QWidget):
 
     def update_timer(self):
         """Update the timer display and track task time"""
-        # Update task time if a task is selected
         if self.state != "overtime":
             self.time_left = self.time_left.addSecs(-1)
             self.timer_label.setText(self.time_left.toString("mm:ss"))
+
+            # Add working time to current task
+            self.stats_instance.stats[self.task_combobox.currentIndex()]["time"] += 1
+            self.stats_instance.save_task()
 
             if self.time_left == QTime(0, 0, 0):
                 self.state = "overtime"
@@ -109,23 +133,12 @@ class TimerPage(QWidget):
             # If it's overtime, add "+" simbol to the display time
             self.overtime_time = self.overtime_time.addSecs(1)
             self.timer_label.setText("+" + self.overtime_time.toString("mm:ss"))
-
-       # if self.current_task and self.current_task in self.tasks:
-       #     self.tasks[self.current_task]["time"] += 1
-       #     # Find the row for the current task and update the displayed time
-       #     for row in range(self.task_table.rowCount()):
-       #         if self.task_table.item(row, 0).text() == self.current_task:
-
+            # Add working time to current task for overtime
+            self.stats_instance.stats[self.task_combobox.currentIndex()]["time"] += 1
+            self.stats_instance.save_task()
 
     def toggle_timer(self):
         """Start, pause or resume the timer"""
-        # Set current task from selection if available
-        # selected_items = self.task_table.selectedItems()
-        # if selected_items:
-        #     row = self.task_table.row(selected_items[0])
-        #     self.current_task = self.task_table.item(row, 0).text()
-
-        # Toggle timer state
         if self.state == "stopped" or self.state == "paused":
             self.state = "running"
             self.start_button.setText("Pause")
@@ -134,9 +147,7 @@ class TimerPage(QWidget):
             self.state = "paused"
             self.start_button.setText("Resume")
             self.timer.stop()
-        
         self.set_timer_color()
-
 
     def stop_timer(self):
         """Stop the timer and reset to default state"""
@@ -169,8 +180,6 @@ class TimerPage(QWidget):
         self.start_button.setText("Start")
         self.timer_label.setText(self.time_left.toString("mm:ss"))  # Update display from time_left
         self.set_timer_color()
-       # self.save_tasks()
-
 
     def set_timer_color(self):
         if self.state == "running":
@@ -186,12 +195,3 @@ class TimerPage(QWidget):
             self.timer_label.setStyleSheet("font-size: 48px; color: white;")
         elif self.state == "overtime":
             self.timer_label.setStyleSheet("font-size: 48px; color: yellow;")
-
-
-
-
-
-
-
-
-

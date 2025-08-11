@@ -61,11 +61,3 @@ class MainWindow(QMainWindow):
         central_widget.setMouseTracking(True)
         self.setMouseTracking(True)
         self.setCentralWidget(central_widget)
-
-
-
-
-
-
-
-

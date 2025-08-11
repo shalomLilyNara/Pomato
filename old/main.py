@@ -341,8 +341,7 @@ class TimerScene(QWidget):
         layout.addWidget(delete_button)
 
         # Dialog buttons
-        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | 
-                                      QDialogButtonBox.StandardButton.Cancel)
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
         layout.addWidget(button_box)
 
         # Delete task function

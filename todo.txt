@@ -1,0 +1,7 @@
+Make stats page
+    Import json file from categories.json   Done 7/5
+    Let users create tags
+    Let users set tags in timer_page
+    Show statistics of each task in stats_page
+
+
