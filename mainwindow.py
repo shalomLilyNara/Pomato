@@ -32,25 +32,25 @@ class MainWindow(QMainWindow):
 
         timer_button= QPushButton()
         timer_button.setStyleSheet("border: none;")
-        timer_button.setIcon(QIcon("./resources/stopwatch.png"))
+        timer_button.setIcon(QIcon("./resources/pomato_stopwatch.png"))
         timer_button.setIconSize(QSize(64, 64))
         timer_button.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(0))
 
         stats_button = QPushButton()
         stats_button.setStyleSheet("border: none;")
-        stats_button.setIcon(QIcon("./resources/stopwatch.png"))
+        stats_button.setIcon(QIcon("./resources/pomato_stats.png"))
         stats_button.setIconSize(QSize(64, 64))
         stats_button.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(1))
 
         todo_button = QPushButton()
         todo_button.setStyleSheet("border: none;")
-        todo_button.setIcon(QIcon("./resources/stopwatch.png"))
+        todo_button.setIcon(QIcon("./resources/pomato_todo.png"))
         todo_button.setIconSize(QSize(64, 64))
         todo_button.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(2))
 
         config_button = QPushButton()
         config_button.setStyleSheet("border: none;")
-        config_button.setIcon(QIcon("./resources/stopwatch.png"))
+        config_button.setIcon(QIcon("./resources/pomato_settings.png"))
         config_button.setIconSize(QSize(64, 64))
         config_button.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(3))
 

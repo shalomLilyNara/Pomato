@@ -43,7 +43,7 @@ QCheckBox::indicator:hover {
     border: 2px solid #007ACC;
 }
 QCheckBox {
-    font-size: 15px;
+    font-size: 25px;
     font-weight: 500;
     spacing: 10px;
 }</string>

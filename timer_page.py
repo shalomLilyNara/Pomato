@@ -17,9 +17,10 @@ class TimerPage(QWidget):
         self.timer_settings = self.config.timer_settings
 
         # Timer settings
-        self.pomo_time = QTime(0, self.timer_settings[0], 0)
-        self.s_break = QTime(0, self.timer_settings[1], 0)
-        self.l_break = QTime(0, self.timer_settings[2], 0)
+        # self.pomo_time = QTime(0, self.timer_settings[0], 0)
+        self.pomo_time = QTime(0, 0, 2)
+        self.s_break = QTime(0, 0, 3)
+        self.l_break = QTime(0, 0, 4)
         self.timer = QTimer(self)
         self.time_left = QTime(self.pomo_time)
         self.timer.timeout.connect(self.update_timer)
@@ -47,7 +48,6 @@ class TimerPage(QWidget):
         self.task_combobox = QComboBox(self)
         for task in self.stats_instance.stats:
             self.task_combobox.addItem(task["name"])
-        self.task_combobox.setStyleSheet("QComboBox::item:selected { background-color: rgb(255, 0, 0); }")
         # Timer elements
         self.timer_label = QLabel(self.time_left.toString("mm:ss"), self)
         self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -57,7 +57,7 @@ class TimerPage(QWidget):
         # Session indicator
         self.session_label = QLabel(f"Session: {self.session_count % 4 + 1} (Pomodoro)", self)
         self.session_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.session_label.setStyleSheet("font-size: 14px; color: white")
+        self.session_label.setStyleSheet("font-size: 18px; color: white")
 
         # Layout
         button_layout = QHBoxLayout()
@@ -83,6 +83,7 @@ class TimerPage(QWidget):
         self.setStyleSheet("""
         QComboBox{
         color: white;
+        font-size: 25px;
         }
 
         QComboBox::item:selected {
