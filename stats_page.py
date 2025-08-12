@@ -1,9 +1,9 @@
 import json
 import pathlib
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import (QBoxLayout, QLabel, QMainWindow, QPushButton,
+from PySide6.QtWidgets import (QLabel, QPushButton,
     QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QTableWidget, QTableWidgetItem,
-    QDialog, QDialogButtonBox, QMessageBox, QColorDialog)
+    QDialog, QDialogButtonBox, QMessageBox, QHeaderView)
 
 class StatsPage(QWidget):
     def __init__(self):
@@ -38,8 +38,7 @@ class StatsPage(QWidget):
             self.json_path.parent.mkdir(parents=True, exist_ok=True)
             self.stats = [{
                 "name": "Coding",
-                "time": 0,
-                "color": "#003d81"
+                "time": 0
             }]
             self.save_task()
             # Load the file that was just created
@@ -49,8 +48,8 @@ class StatsPage(QWidget):
 
         # Task management ui
         self.task_input = QLineEdit(self)
-        self.task_input.setPlaceholderText("Input task name")
-        self.add_task_button = QPushButton("Add task", self)
+        self.task_input.setPlaceholderText("Input category name")
+        self.add_task_button = QPushButton("Add", self)
         self.add_task_button.clicked.connect(self.add_task)
         self.task_input.returnPressed.connect(self.add_task)
 
@@ -65,12 +64,14 @@ class StatsPage(QWidget):
 
     def create_table(self, stats):
         self.tasks = []
-        keys = ["Name", "Time", "Color"]
+        keys = ["Name", "Time(min)"]
         # Create table if it doesn't exist yet
         if not hasattr(self, "table"):
             self.table = QTableWidget(self)
-            self.table.setColumnCount(3)
+            self.table.setColumnCount(2)
+            self.header = self.table.horizontalHeader()
             self.table.setHorizontalHeaderLabels(keys)
+            self.header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
             # Disable direct editing of a task
             self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         # Clear existing rows and set new row count
@@ -81,14 +82,10 @@ class StatsPage(QWidget):
             # Add each value of the task to the table
             n = QTableWidgetItem(task["name"])
             n.setForeground(QColor("white"))
-            t = QTableWidgetItem(str(task["time"]))
+            t = QTableWidgetItem(str(round(task["time"] / 60)))
             t.setForeground(QColor("white"))
-            c = QTableWidgetItem(task["color"])
-            c.setForeground(QColor("white"))
-            c.setBackground(QColor(task["color"]))
             self.table.setItem(row, 0, n)
             self.table.setItem(row, 1, t)
-            self.table.setItem(row, 2, c)
             # Append task name to "tasks" list
             self.tasks.append(task["name"])
         self.table.itemDoubleClicked.connect(self.configure_task) # activate configure window when double clicking a task
@@ -97,38 +94,20 @@ class StatsPage(QWidget):
         item = self.table.selectedItems()
         row = self.table.row(item[0])
         task_name = self.table.item(row, 0).text()
-        task_color = self.table.item(row, 2).text()
 
         dialog = QDialog(self)
-        dialog.setWindowTitle("Configure Task")
+        dialog.setWindowTitle("Configure")
         layout = QVBoxLayout(dialog)
 
         # Rename
-        name_label = QLabel("Task name:")
+        name_label = QLabel("Category name:")
         name_input = QLineEdit(dialog)
         name_input.setText(task_name)
         layout.addWidget(name_label)
         layout.addWidget(name_input)
 
-        # Color picker
-        color_label = QLabel("Task Color:")
-        change_color_button = QPushButton("Change Color")
-        color_preview = QLabel()
-        color_preview.setFixedSize(100, 30)
-        color_preview.setStyleSheet(f"background-color: {task_color}; border: 1px solid black;")
-        def select_new_color():
-            nonlocal task_color
-            new_color = QColorDialog.getColor(task_color, dialog, "Select Task Color")
-            if new_color.isValid():
-                task_color = new_color
-                color_preview.setStyleSheet(f"background-color: {new_color.name()}; border: 1px solid black;")
-        layout.addWidget(color_label)
-        layout.addWidget(color_preview)
-        layout.addWidget(change_color_button)
-        change_color_button.clicked.connect(select_new_color)
-
         # Delete button
-        delete_button = QPushButton("Delete Task", dialog)
+        delete_button = QPushButton("Delete", dialog)
         layout.addWidget(delete_button)
 
         # Dialog buttons
@@ -150,7 +129,6 @@ class StatsPage(QWidget):
 
         def save_changes():
             nonlocal task_name
-            nonlocal task_color
             nonlocal name_input
             # Check if new name is empty
             if not name_input.text().strip():
@@ -164,7 +142,6 @@ class StatsPage(QWidget):
             for item in self.stats:
                 if item["name"] == task_name:
                     item["name"] = name_input.text()
-                    item["color"] = task_color
                     break
             # Update color
             self.save_task()
@@ -182,8 +159,7 @@ class StatsPage(QWidget):
             # Add a new row to table
             new_task = {
                 "name": task_name,
-                "time": 0,
-                "color": "#ffbf00",
+                "time": 0
             }
             self.stats.append(new_task)
             # Update json file

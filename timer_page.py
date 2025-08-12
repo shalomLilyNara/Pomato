@@ -17,10 +17,9 @@ class TimerPage(QWidget):
         self.timer_settings = self.config.timer_settings
 
         # Timer settings
-        # self.pomo_time = QTime(0, self.timer_settings[0], 0)
         self.pomo_time = QTime(0, 0, 2)
-        self.s_break = QTime(0, 0, 3)
-        self.l_break = QTime(0, 0, 4)
+        self.s_break = QTime(0, self.timer_settings[1], 0)
+        self.l_break = QTime(0, self.timer_settings[2], 0)
         self.timer = QTimer(self)
         self.time_left = QTime(self.pomo_time)
         self.timer.timeout.connect(self.update_timer)
@@ -34,10 +33,7 @@ class TimerPage(QWidget):
         self.session_count = 0
         self.timer_mode = "pomodoro"  # possible modes: pomodoro, short_break, long_break
         # State variables
-        # self.tasks = {}
-        # self.current_task = None
         self.state = "stopped" # possible states: stopped, running, paused, overtime
-        # self.data_file = Path("tasks.json")
         # Setup UI and Load data
         self._setup_ui()
 
@@ -121,10 +117,10 @@ class TimerPage(QWidget):
         if self.state != "overtime":
             self.time_left = self.time_left.addSecs(-1)
             self.timer_label.setText(self.time_left.toString("mm:ss"))
-
-            # Add working time to current task
-            self.stats_instance.stats[self.task_combobox.currentIndex()]["time"] += 1
-            self.stats_instance.save_task()
+            if self.timer_mode == "pomodoro":
+                # Add working time to current task
+                self.stats_instance.stats[self.task_combobox.currentIndex()]["time"] += 1
+                self.stats_instance.save_task()
 
             if self.time_left == QTime(0, 0, 0):
                 self.state = "overtime"
@@ -138,9 +134,10 @@ class TimerPage(QWidget):
             # If it's overtime, add "+" simbol to the display time
             self.overtime_time = self.overtime_time.addSecs(1)
             self.timer_label.setText("+" + self.overtime_time.toString("mm:ss"))
-            # Add working time to current task for overtime
-            self.stats_instance.stats[self.task_combobox.currentIndex()]["time"] += 1
-            self.stats_instance.save_task()
+            if self.timer_mode == "pomodoro":
+                # Add working time to current task for overtime
+                self.stats_instance.stats[self.task_combobox.currentIndex()]["time"] += 1
+                self.stats_instance.save_task()
 
     def toggle_timer(self):
         """Start, pause or resume the timer"""
